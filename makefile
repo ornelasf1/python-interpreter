@@ -1,5 +1,5 @@
 main: mypython.o lex.o
-
+	g++ mypython.o lex.o -o main
 mypython.o: mypython.cpp
 	g++ -c mypython.cpp
 
