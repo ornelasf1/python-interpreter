@@ -13,12 +13,15 @@ void yyerror(const char* s);
 %union {
 	int ival;
 	float fval;
-}
+	char *sval;
+}	
 
 %token<ival> T_INT
 %token<fval> T_FLOAT
+%token<sval> STRING
 %token T_PLUS T_MINUS T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT
-%token T_NEWLINE T_QUIT
+%token T_NEWLINE T_QUIT  
+%token print
 %left T_PLUS T_MINUS
 %left T_MULTIPLY T_DIVIDE
 
@@ -35,7 +38,8 @@ calculation:
 
 line: T_NEWLINE
     | mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
-    | expression T_NEWLINE { printf("\tResult: %i\n", $1); }
+    | expression T_NEWLINE { printf("\tfound expresstion: %i\n", $1); }
+	| print T_LEFT expression T_RIGHT T_NEWLINE { printf("\t %i\n", $3); }
     | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
 ;
 

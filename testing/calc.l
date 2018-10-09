@@ -21,7 +21,10 @@
 "/"		{return T_DIVIDE;}
 "("		{return T_LEFT;}
 ")"		{return T_RIGHT;}
+"   "   {printf("tab\n");}
 "exit"		{return T_QUIT;}
 "quit"		{return T_QUIT;}
+"print"     {return print;}
+"if"        {printf("if found\n");}
 
 %%
