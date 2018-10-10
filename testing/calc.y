@@ -13,15 +13,15 @@ void yyerror(const char* s);
 %union {
 	int ival;
 	float fval;
-	char *sval;
+	char *string;
 }	
 
 %token<ival> T_INT
 %token<fval> T_FLOAT
-%token<sval> STRING
-%token T_PLUS T_MINUS T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT
-%token T_NEWLINE T_QUIT  
-%token print
+%token<string> T_WORD
+%token T_PLUS T_MINUS T_QUIT T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT T_PRINT T_COLON
+%token T_TAB T_QUOTE T_COMMENT
+%token T_NEWLINE   
 %left T_PLUS T_MINUS
 %left T_MULTIPLY T_DIVIDE
 
@@ -39,7 +39,7 @@ calculation:
 line: T_NEWLINE
     | mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
     | expression T_NEWLINE { printf("\tfound expresstion: %i\n", $1); }
-	| print T_LEFT expression T_RIGHT T_NEWLINE { printf("\t %i\n", $3); }
+	| T_PRINT T_LEFT T_QUOTE T_WORD T_QUOTE T_RIGHT T_NEWLINE { printf("%s\n", $4);}
     | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
 ;
 
@@ -81,5 +81,5 @@ int main() {
 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
-	exit(1);
+	// exit(1);
 }
