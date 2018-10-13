@@ -1,83 +1,115 @@
 %{
 
-#include <stdio.h>
+#include <stdio.h>     /* C declarations used in actions */
 #include <stdlib.h>
-
+#include <ctype.h>
 extern int yylex();
 extern int yyparse();
-extern FILE* yyin;
 
-void yyerror(const char* s);
+extern FILE* yyin;
+int symbols[52];
+
+int symbolVal(char symbol);
+void updateSymbolVal(char symbol, int val);
+void yyerror(const char *s);
+
 %}
 
 %union {
-	int ival;
-	float fval;
-	char *string;
-}	
+	int num;
+	 char id;
+	 float fval;
+	 char *w;
+	 }      
+	    /* Yacc definitions */
+%token print add subtract multiple divide
+%token exit_command newLine assign quote left_b right_b comma
 
-%token<ival> T_INT
-%token<fval> T_FLOAT
-%token<string> T_WORD
-%token T_PLUS T_MINUS T_QUIT T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT T_PRINT T_COLON
-%token T_TAB T_QUOTE T_COMMENT
-%token T_NEWLINE   
-%left T_PLUS T_MINUS
-%left T_MULTIPLY T_DIVIDE
+%left add subtract
+%left multiple divide
+%token <w> word
+%token <num> number
+%token<fval> floats
+%token <id> identifier
+%type <num> line exp term 
+%type <id> assignment
 
-%type<ival> expression
-%type<fval> mixed_expression
+%start line
 
-%start calculation
-
-%%
-
-calculation:
-	   | calculation line
-;
-
-line: T_NEWLINE
-    | mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
-    | expression T_NEWLINE { printf("\tfound expresstion: %i\n", $1); }
-	| T_PRINT T_LEFT T_QUOTE T_WORD T_QUOTE T_RIGHT T_NEWLINE { printf("%s\n", $4);}
-    | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
-;
-
-mixed_expression: T_FLOAT                 		 { $$ = $1; }
-	  | mixed_expression T_PLUS mixed_expression	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS mixed_expression	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY mixed_expression { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | T_LEFT mixed_expression T_RIGHT		 { $$ = $2; }
-	  | expression T_PLUS mixed_expression	 	 { $$ = $1 + $3; }
-	  | expression T_MINUS mixed_expression	 	 { $$ = $1 - $3; }
-	  | expression T_MULTIPLY mixed_expression 	 { $$ = $1 * $3; }
-	  | expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | mixed_expression T_PLUS expression	 	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS expression	 	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY expression 	 { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE expression	 { $$ = $1 / $3; }
-	  | expression T_DIVIDE expression		 { $$ = $1 / (float)$3; }
-;
-
-expression: T_INT				{ $$ = $1; }
-	  | expression T_PLUS expression	{ $$ = $1 + $3; }
-	  | expression T_MINUS expression	{ $$ = $1 - $3; }
-	  | expression T_MULTIPLY expression	{ $$ = $1 * $3; }
-	  | T_LEFT expression T_RIGHT		{ $$ = $2; }
-;
 
 %%
 
-int main() {
-	yyin = stdin;
+/* descriptions of expected inputs     corresponding actions (in C) */
 
-	do {
-		yyparse();
-	} while(!feof(yyin));
+line: assignment newLine				{;}
+		| exit_command newLine			{exit(EXIT_SUCCESS);}
+		| print left_b exp right_b newLine				{printf("%d\n", $3);}
+		| line assignment newLine		{;}
+		
+		| line print left_b exp right_b newLine		{printf("%d\n", $4);}
+		| line exit_command newLine		{exit(EXIT_SUCCESS);}
+		| print left_b  word   right_b newLine      {printf("%s\n",$3)}
+		| print left_b  word comma exp   right_b newLine      {printf("%s%d\n",$3,$5)}
+		| line print left_b  word   right_b newLine      {printf("%s\n",$4)}
+		| line print left_b  word comma exp   right_b newLine      {printf("%s%d\n",$4,$6)}
 
-	return 0;
+        ;
+
+assignment: identifier assign exp  { updateSymbolVal($1,$3); }
+			;
+
+exp: term                  		{$$ = $1;}
+		| exp add exp          {$$ = $1 + $3;}
+       	| exp subtract exp     {$$ = $1 - $3;}
+		| exp multiple exp    	{$$ = $1 * $3;}
+		| exp divide exp       {$$ = $1 / $3;}
+		| exp add add          {$$ = $1+1;}
+		| exp subtract subtract          {$$ = $1-1;}
+       	;
+term: number                {$$ = $1;}
+		| identifier        {$$ = symbolVal($1);}
+        ;
+
+%%                     /* C++ code */
+
+int computeSymbolIndex(char token)
+{
+	int idx = -1;
+	if(islower(token)) {
+		idx = token - 'a' + 26;
+	} else if(isupper(token)) {
+		idx = token - 'A';
+	}
+	return idx;
+} 
+
+/* returns the value of a given symbol */
+int symbolVal(char symbol)
+{
+	int bucket = computeSymbolIndex(symbol);
+	return symbols[bucket];
 }
+
+/* updates the value of a given symbol */
+void updateSymbolVal(char symbol, int val)
+{
+	int bucket = computeSymbolIndex(symbol);
+	symbols[bucket] = val;
+}
+
+
+// int main() {
+// 	yyin = stdin;
+
+// 	do {
+// 		yyparse();
+// 	} while(!feof(yyin));
+
+// 	return 0;
+// }
+
+
+
 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);

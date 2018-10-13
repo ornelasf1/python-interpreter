@@ -2,32 +2,34 @@
 
 %{
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 #define YY_DECL int yylex()
-
 #include "calc.tab.h"
-
 %}
 
+string_const (\"(\\.|[^"])*\")
 %%
 
-[ \t]	; // ignore all whitespace
-[0-9]+\.[0-9]+ 	{yylval.fval = atof(yytext); return T_FLOAT;}
-[0-9]+		{yylval.ival = atoi(yytext); return T_INT;}
-
-\n		{return T_NEWLINE;}
-"+"		{return T_PLUS;}
-"-"		{return T_MINUS;}
-"*"		{return T_MULTIPLY;}
-"/"		{return T_DIVIDE;}
-"("		{return T_LEFT;}
-")"		{return T_RIGHT;}
-"   "   {return T_TAB;}
-"exit"  {return T_QUIT;}
-"print" {return T_PRINT;}
-"\""    {return T_QUOTE;}
-"#"     {return T_COMMENT;}
-[a-z0-9]+    {yylval.string = strdup( yytext ); return T_WORD;}
-
+[0-9]+                 {yylval.num = atoi(yytext); return number;}
+[0-9]+\.[0-9]+         {yylval.fval = atof(yytext); return floats;}
+"print"				   {return print;}
+"exit"				   {return exit_command;}
+"+"                     {return add;}
+"-"                     {return subtract;}
+"*"                     {return multiple;}
+"/"                     {return divide;}
+"="                     {return assign;}
+"\""                    {return quote;}
+"("                     {return left_b;}
+")"                     {return right_b;}
+","                     {return comma;}
+[a-zA-Z]			   {yylval.id = yytext[0]; return identifier;}
+\"([^\\\"]|\\.)*\"     {yylval.w = strdup(yytext);return word;}
+"\n"                    {return newLine;}
+[ ]                     ;
 
 %%
+
+
+int yywarp (void) {return 1;}

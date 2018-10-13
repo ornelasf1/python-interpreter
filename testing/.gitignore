@@ -1,5 +1,6 @@
-calc.exe
-calc.l
+lex.yy.c
+mypython.exe
+pythoninterpreter.tab.c
+pythoninterpreter.tab.h
 calc.tab.c
 calc.tab.h
-lex.yy.c
