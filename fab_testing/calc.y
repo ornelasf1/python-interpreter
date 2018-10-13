@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <string.h>
 #include <vector>
 #include "mypython.h"
 
@@ -10,6 +12,7 @@ extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
 
+//#define YYDEBUG 1
 
 void yyerror(const char* s);
 %}
@@ -52,12 +55,31 @@ line: T_NEWLINE { printf("new line\n"); }
 
 assignment: T_STRING T_ASSIGN T_INT {  
 	$$ = $3;
-	Variable* var = new Variable($1, $3);
+	Variable* var = new Variable($1, $3, "INT");
 	variables.push_back(*var);
+	}
+	| T_STRING T_ASSIGN T_QUOTE T_STRING T_QUOTE {  
+		/*$$ = $4;*/
+		Variable* var = new Variable($1, $4, "STRING");
+		variables.push_back(*var);
+	}
+    | T_STRING T_ASSIGN T_FLOAT {  
+		$$ = $3;
+		Variable* var = new Variable($1, $3, "FLOAT");
+		variables.push_back(*var);
 	}
 ;
 
 statement: T_PRINT T_LEFT T_QUOTE T_STRING T_QUOTE T_RIGHT T_NEWLINE { printf("%s\n", $4);}
+	| T_PRINT T_LEFT T_INT T_RIGHT T_NEWLINE { printf("%d\n", $3);}
+	| T_PRINT T_LEFT T_STRING T_RIGHT T_NEWLINE { 
+		std::string str($3);
+		Variable* value = getVariable(str);
+		if(value)
+			Variable::printVariableValue(value);
+		else
+			yyerror("unknown variable");
+	}
 ;
 
 mixed_expression: T_FLOAT                 		 { $$ = $1; }
