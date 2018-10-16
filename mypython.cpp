@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	} while(!feof(yyin));
 
     for(int i = 0; i < variables.size(); i++){
-        printf("%d Variable: %s\n", i, variables[i].getIdentifier().c_str());
+        printf("%d Variable: %s and its value is %d \n", i, variables[i].getIdentifier().c_str(),variables[i].getIntValue());
     }
 
 	return 0;

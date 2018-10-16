@@ -9,6 +9,4 @@ alpha = 70
 print("a= ",alpha)
 print("beta: ", beta)
 print(charlie)
-
-
 exit

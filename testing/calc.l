@@ -6,15 +6,26 @@
 #include <stdlib.h>
 #define YY_DECL int yylex()
 #include "calc.tab.h"
+
 %}
 
-string_const (\"(\\.|[^"])*\")
 %%
 
-[0-9]+                 {yylval.num = atoi(yytext); return number;}
-[0-9]+\.[0-9]+         {yylval.fval = atof(yytext); return floats;}
+[0-9]+                 {yylval.num = atoi(yytext); return NUMBER;}
 "print"				   {return print;}
 "exit"				   {return exit_command;}
+"def"                   {return function_defined;}
+"if"                    {return IF;}
+"else"                  { ELSE;}
+"return"                {return funcReturn;}
+"<"                     {return LT; }
+"<="                    {  return LTE; }
+">"                     {  return GT; }
+">="                    {  return GTE; }
+"=="                    { return EQUAL; }
+"!="                    {  return NOT_EQUAL; }
+"   "                   {return tab;}
+":"                     {return colon;}
 "+"                     {return add;}
 "-"                     {return subtract;}
 "*"                     {return multiple;}
@@ -24,12 +35,10 @@ string_const (\"(\\.|[^"])*\")
 "("                     {return left_b;}
 ")"                     {return right_b;}
 ","                     {return comma;}
-[a-zA-Z]			   {yylval.id = yytext[0]; return identifier;}
-\"([^\\\"]|\\.)*\"     {yylval.w = strdup(yytext);return word;}
+[a-zA-Z0-9_-]+   {yylval.w = strdup(yytext); return IDENTIFIER;}
+\"([^\\\"]|\\.)*\"      {yylval.w = strdup(yytext); return WORD;}
 "\n"                    {return newLine;}
 [ ]                     ;
+.                       ;
 
 %%
-
-
-int yywarp (void) {return 1;}

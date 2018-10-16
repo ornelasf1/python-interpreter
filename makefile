@@ -1,13 +1,11 @@
-run:	main
-		./main.exe python_testfile.py
-main: mypython.o lex.o
-	g++ mypython.o lex.o -o main
+mypython: lex.yy.c calc.tab.c calc.tab.h mypython.cpp mypython.h
+	g++ calc.tab.c lex.yy.c mypython.cpp mypython.h -o mypython
 
-mypython.o: mypython.cpp
-	g++ -c mypython.cpp
+calc.tab.h:	calc.y
+	bison -d calc.y
 
-lex.o: lex.cpp
-	g++ -c lex.cpp
+lex.yy.c: calc.l calc.tab.h
+	flex calc.l
 
 clean:
-	rm *.o main
+	rm mypython calc.tab.c lex.yy.c calc.tab.h

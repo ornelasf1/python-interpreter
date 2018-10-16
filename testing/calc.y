@@ -1,117 +1,121 @@
 %{
-
-#include <stdio.h>     /* C declarations used in actions */
+#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <string.h>
+#include"node.h"
+
 extern int yylex();
-extern int yyparse();
-
-extern FILE* yyin;
-int symbols[52];
-
-int symbolVal(char symbol);
-void updateSymbolVal(char symbol, int val);
-void yyerror(const char *s);
+extern void yyerror(const char *);
 
 %}
-
 %union {
-	int num;
-	 char id;
-	 float fval;
-	 char *w;
-	 }      
-	    /* Yacc definitions */
-%token print add subtract multiple divide
-%token exit_command newLine assign quote left_b right_b comma
+    int num;
+	char *w;
+}
+%token  add subtract multiple divide
+%token exit_command newLine  quote  
+%token function_defined colon tab 
+%token print IF  funcReturn
+%nonassoc NO_ELSE
+%nonassoc ELSE
+%left LT GT EQUAL NOT_EQUAL LTE GTE
 
+%token <w> WORD
+%token <w> IDENTIFIER
+%token <num> NUMBER
+%left comma
+%right assign
 %left add subtract
 %left multiple divide
-%token <w> word
-%token <num> number
-%token<fval> floats
-%token <id> identifier
-%type <num> line exp term 
-%type <id> assignment
+%left left_b right_b
+
+%type <num> exp exp_list  selection_statement term assignment function line RELATIONAL EQUALITY
+
 
 %start line
 
 
 %%
 
-/* descriptions of expected inputs     corresponding actions (in C) */
+
 
 line: assignment newLine				{;}
-		| exit_command newLine			{exit(EXIT_SUCCESS);}
-		| print left_b exp right_b newLine				{printf("%d\n", $3);}
+		| newLine						{;}
+		|selection_statement			{;}
+		| function						{;}
+		| line function					{;}
+		| line newLine					{;}
+		| exit_command					{return 0;}
+		| exit_command newLine			{return 0;}
 		| line assignment newLine		{;}
-		
-		| line print left_b exp right_b newLine		{printf("%d\n", $4);}
-		| line exit_command newLine		{exit(EXIT_SUCCESS);}
-		| print left_b  word   right_b newLine      {printf("%s\n",$3)}
-		| print left_b  word comma exp   right_b newLine      {printf("%s%d\n",$3,$5)}
-		| line print left_b  word   right_b newLine      {printf("%s\n",$4)}
-		| line print left_b  word comma exp   right_b newLine      {printf("%s%d\n",$4,$6)}
+		| line exit_command newLine		{return 0;}
+		| print left_b exp right_b newLine	{;}
+		| tab funcReturn line			{;}						
+		| print left_b  WORD   right_b newLine {;}
+		| print left_b  WORD comma exp   right_b newLine  {;}
+		| line print left_b exp right_b newLine	{;}
+		| line print left_b  WORD   right_b newLine {;}
+		| line print left_b  WORD comma exp   right_b newLine {;}
 
         ;
+selection_statement: IF left_b exp right_b line %prec NO_ELSE {;}
+  | IF left_b exp right_b line ELSE line						{;}
+;
 
-assignment: identifier assign exp  { updateSymbolVal($1,$3); }
-			;
 
-exp: term                  		{$$ = $1;}
-		| exp add exp          {$$ = $1 + $3;}
-       	| exp subtract exp     {$$ = $1 - $3;}
-		| exp multiple exp    	{$$ = $1 * $3;}
-		| exp divide exp       {$$ = $1 / $3;}
-		| exp add add          {$$ = $1+1;}
-		| exp subtract subtract          {$$ = $1-1;}
+
+assignment: IDENTIFIER assign exp  {;}
+;
+
+exp: term                  		{;}
+ 		| RELATIONAL     			 {; }
+  		| EQUALITY       		 { ; }
+		| exp add exp          			 {;}
+       	| exp subtract exp     			 {;}
+		| exp multiple exp    			 {;}
+		| exp divide exp       			 {;}
+		| IDENTIFIER left_b right_b            { ; }
+		| IDENTIFIER left_b  exp_list right_b  {; }
        	;
-term: number                {$$ = $1;}
-		| identifier        {$$ = symbolVal($1);}
-        ;
+RELATIONAL: exp GT exp 	{;}
+	| exp LT exp 	{;}
+	|  exp GTE exp 	{;}
+	| exp LTE exp 	{;}
+;
+EQUALITY: exp EQUAL exp {;}
+	|	exp NOT_EQUAL exp {;}
+
+exp_list: exp			{;}
+  | exp comma exp_list { ; }
+;
+
+
+term: NUMBER                {;}
+		| IDENTIFIER        {;}
+;
+
+function: function_defined IDENTIFIER left_b right_b            { ; }
+		| tab line					{;}
+
 
 %%                     /* C++ code */
 
-int computeSymbolIndex(char token)
-{
-	int idx = -1;
-	if(islower(token)) {
-		idx = token - 'a' + 26;
-	} else if(isupper(token)) {
-		idx = token - 'A';
-	}
-	return idx;
-} 
-
-/* returns the value of a given symbol */
-int symbolVal(char symbol)
-{
-	int bucket = computeSymbolIndex(symbol);
-	return symbols[bucket];
-}
-
-/* updates the value of a given symbol */
-void updateSymbolVal(char symbol, int val)
-{
-	int bucket = computeSymbolIndex(symbol);
-	symbols[bucket] = val;
-}
 
 
-// int main() {
-// 	yyin = stdin;
+Node* CreateNode(NodeType type,int val, Node* left, Node* right)
+   {
+      Node* node = new Node;
+      node->Type = type;
+	  node->Value = val;
+      node->Left = left;
+      node->Right = right;
 
-// 	do {
-// 		yyparse();
-// 	} while(!feof(yyin));
-
-// 	return 0;
-// }
-
-
-
+      return node;
+   }
 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
-	// exit(1);
+	exit(1);
 }
+
+

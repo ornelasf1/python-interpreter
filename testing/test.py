@@ -1,9 +1,12 @@
-a = 9
-print("a= ",a)
+alpha = 9
+print("a= ",alpha)
 
+beta = alpha + 10
+alpha = 4
+charlie = 23 + beta
+alpha = 70
 
-b=a*a+a/a
-print("a*a+a/a= ",b)
-
+print("a= ",alpha)
+print("beta: ", beta)
+print(charlie)
 exit
-
