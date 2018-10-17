@@ -62,7 +62,11 @@ statement:assignment 							{;}
 	| function 						{;}
 	| printing 						{;}
 ;
-printing:print left_b exp right_b 	{printf("%d\n",$3);}					
+printing:print left_b exp right_b 	{ 
+	Node* node = new PrintNode($3); 
+	program->functions.back().statements.push_back(node);
+	//printf("Insert print node with %d into function %s\n", $3, program->functions.back().identifier.c_str());
+	}					
 		| print left_b  WORD   right_b  {
 											std::string str($3);
 											str.erase(0, 1);
@@ -107,9 +111,15 @@ exp: term                  		{$$=$1;}
 		| exp '/' exp       			 {$$=$1/$3;}
 		| IDENTIFIER left_b right_b            { 
 			for(int i = 0; i < program->functions.size(); i++){
-				// printf("%s and %s ....\n", $1, program->functions[i].identifier.c_str());
+				//printf("%s and %s ....\n", $1, program->functions[i].identifier.c_str());
 				if((strcmp($1, program->functions[i].identifier.c_str())) == 0){
 					$$ = program->functions[i].returnValue;
+					if($$ == -1){
+						for(int j = 0; j < program->functions[i].statements.size(); j++){
+							//printf("browse nodes in %s\n", program->functions[i].identifier.c_str());
+					 		printf("%d\n", (static_cast <PrintNode*> (program->functions[i].statements[j]))->intValue);
+						}
+					}
 					// printf("assign %d to %s\n ", program->functions[i].returnValue, program->functions[i].identifier.c_str());
 					break;
 				}

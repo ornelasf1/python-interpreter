@@ -62,8 +62,7 @@ Scope::Scope(string id, vector<Variable> vars){
     variables = vars;
 }
 
-Function::Function(){
-}
+Function::Function(){}
 Function::Function(vector<Variable> v){
     variables = v;
 }
@@ -71,6 +70,7 @@ Function::Function(string s, int i, vector<Variable> v){
     identifier = s;
     index = i;
     variables = v;
+    returnValue = -1;
 }
 
 
@@ -101,4 +101,32 @@ Variable* Scope::getVariable(string var){
 		if(var == program->variables[i].getIdentifier())
 			return &(program->variables[i]);
 	return NULL;
+}
+
+
+
+Node::Node(){
+}
+Node::Node(NodeType t){
+    type = t;
+}
+
+PrintNode::PrintNode(){
+}
+PrintNode::PrintNode(string s){
+    stringValue = s;
+}
+PrintNode::PrintNode(int i){
+    intValue = i;
+}
+PrintNode::PrintNode(string s, int i){
+    stringValue = s;
+    intValue = i;
+}
+
+AssignNode::AssignNode(){
+}
+AssignNode::AssignNode(string s, int i){
+    variable = s;
+    value = i;
 }

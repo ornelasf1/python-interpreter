@@ -1,3 +1,4 @@
+
 #include <string>
 
 enum NodeType
@@ -5,7 +6,6 @@ enum NodeType
 	EQUAL_NODE,NOT_EQUAL_NODE,FUNCTION_NODE, ASSIGN_NODE,
 	FUNCRETURN_NODE,IF_NODE,CONDITION_NODE,ELSE_NODE,BLOCK_NODE,PRINT_NODE
 };
-
 
 class Node{
 public:
