@@ -112,21 +112,29 @@ Node::Node(NodeType t){
 }
 
 PrintNode::PrintNode(){
+    Node::type = PRINT_NODE;
 }
 PrintNode::PrintNode(string s){
+    Node::type = PRINT_NODE;
     stringValue = s;
+    intValue = -1;
 }
 PrintNode::PrintNode(int i){
+    Node::type = PRINT_NODE;
     intValue = i;
+    stringValue = "";
 }
 PrintNode::PrintNode(string s, int i){
+    Node::type = PRINT_NODE;
     stringValue = s;
     intValue = i;
 }
 
 AssignNode::AssignNode(){
+    Node::type = ASSIGN_NODE;
 }
 AssignNode::AssignNode(string s, int i){
+    Node::type = ASSIGN_NODE;
     variable = s;
     value = i;
 }
