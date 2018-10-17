@@ -107,10 +107,11 @@ exp: term                  		{$$=$1;}
 		| exp '/' exp       			 {$$=$1/$3;}
 		| IDENTIFIER left_b right_b            { 
 			for(int i = 0; i < program->functions.size(); i++){
+				// printf("%s and %s ....\n", $1, program->functions[i].identifier.c_str());
 				if((strcmp($1, program->functions[i].identifier.c_str())) == 0){
 					$$ = program->functions[i].returnValue;
-				}else{
-					$$ = -1;
+					// printf("assign %d to %s\n ", program->functions[i].returnValue, program->functions[i].identifier.c_str());
+					break;
 				}
     		}
 			;}
@@ -133,7 +134,7 @@ function: function_defined IDENTIFIER left_b right_b ':'           {
 	program->functions.push_back(*func);
 	}
 		| funcReturn exp					{
-			program->functions.front().returnValue = $2;
+			program->functions.back().returnValue = $2;
 			}
 ;
 

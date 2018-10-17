@@ -1,10 +1,28 @@
-def f():    
-    a=9
-    a=9
-    print(a)
-    print("a=",a)
-    return a
+
+def ff():
+    print(9)
+    
 
 
-print(f())
+def df():
+    return 640
+
+
+def a():
+    return 55555
+
+
+def b():
+    return 66666
+
+
+print("a=",a())
+
+print("df=",df())
+
+ff()
+
+print("b=",b())
+
+
 

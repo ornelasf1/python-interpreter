@@ -37,6 +37,7 @@
 ","                     {return ',';}
 [a-zA-Z0-9_-]+   {yylval.w = strdup(yytext); return IDENTIFIER;}
 \"([^\\\"]|\\.)*\"      {yylval.w = strdup(yytext); return WORD;}
+[#]([^\\\"]|\\.)*\n             ;
 "\n"                    {return newLine;}
 [ ]                 ;
 .                   ;
