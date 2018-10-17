@@ -71,12 +71,19 @@ printing:print left_b exp right_b 	{
 											std::string str($3);
 											str.erase(0, 1);
 											str.erase(str.size() - 1);
-											printf(str.c_str());
+											//printf("%s",str.c_str());
+
+											Node* node = new PrintNode(str); 
+											program->functions.back().statements.push_back(node);
 											}
-		| print left_b  WORD ',' exp   right_b   {std::string str($3);
+		| print left_b  WORD ',' exp   right_b   {
+											std::string str($3);
 											str.erase(0, 1);
 											str.erase(str.size() - 1);
-											printf(str.c_str());;printf("%d\n",$5);}
+											printf("%s",str.c_str()); printf("%d\n",$5);
+											// Node* node = new PrintNode(str, $5); 
+											// program->functions.back().statements.push_back(node);
+											}
 ;
 selection_statement: IF left_b exp right_b ':' exp 	{if($3){printf("its true");}else{printf("its false");}}
 		| ELSE ':' 	{printf(" ELSE ':' \n ");}
@@ -114,12 +121,36 @@ exp: term                  		{$$=$1;}
 				//printf("%s and %s ....\n", $1, program->functions[i].identifier.c_str());
 				if((strcmp($1, program->functions[i].identifier.c_str())) == 0){
 					$$ = program->functions[i].returnValue;
-					if($$ == -1){
-						for(int j = 0; j < program->functions[i].statements.size(); j++){
-							//printf("browse nodes in %s\n", program->functions[i].identifier.c_str());
-					 		printf("%d\n", (static_cast <PrintNode*> (program->functions[i].statements[j]))->intValue);
+					// if($$ == -1){
+					for(int j = 0; j < program->functions[i].statements.size(); j++){
+						//printf("browse nodes in %s\n", program->functions[i].identifier.c_str());
+						switch(program->functions[i].statements[j]->type){
+							case PRINT_NODE:
+							{
+								int tempI = (static_cast <PrintNode*> (program->functions[i].statements[j]))->intValue;
+								std::string tempS = (static_cast <PrintNode*> (program->functions[i].statements[j]))->stringValue;
+								if(tempI != -1 && tempS != ""){
+									printf("%s%d\n", tempS.c_str(), tempI);
+								}else if(tempI != -1){
+									printf("%d\n", tempI);
+								}else if(tempS != ""){
+									printf("%s\n", tempS.c_str());
+								}
+								break;
+							}
+							case ASSIGN_NODE:
+							{
+								printf("assign going\n");
+								break;
+							}
+							default:
+							{
+								printf("none");
+								break;
+							}
 						}
 					}
+					//}
 					// printf("assign %d to %s\n ", program->functions[i].returnValue, program->functions[i].identifier.c_str());
 					break;
 				}
