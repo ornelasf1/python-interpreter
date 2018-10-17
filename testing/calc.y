@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <string.h>
 #include <vector>
 #include "mypython.h"
 
@@ -104,7 +105,15 @@ exp: term                  		{$$=$1;}
        	| exp '-' exp     			 {$$=$1-$3;}
 		| exp '*' exp    			 {$$=$1*$3;}
 		| exp '/' exp       			 {$$=$1/$3;}
-		| IDENTIFIER left_b right_b            { ; }
+		| IDENTIFIER left_b right_b            { 
+			for(int i = 0; i < program->functions.size(); i++){
+				if((strcmp($1, program->functions[i].identifier.c_str())) == 0){
+					$$ = program->functions[i].returnValue;
+				}else{
+					$$ = -1;
+				}
+    		}
+			;}
 ;
 
 
@@ -119,8 +128,13 @@ term: NUMBER                {$$=$1;}
 		}
 ;
 
-function: function_defined IDENTIFIER left_b right_b ':'           { ; }
-		| funcReturn exp					{$$=$2;}
+function: function_defined IDENTIFIER left_b right_b ':'           { 
+	Function* func = new Function($2, 0, program->variables);
+	program->functions.push_back(*func);
+	}
+		| funcReturn exp					{
+			program->functions.front().returnValue = $2;
+			}
 ;
 
 %%                     /* C++ code */
