@@ -16,25 +16,25 @@
 "exit"				   {return exit_command;}
 "def"                   {return function_defined;}
 "if"                    {return IF;}
-"else"                  { ELSE;}
+"else"                  { return ELSE;}
 "return"                {return funcReturn;}
 "<"                     {return LT; }
 "<="                    {  return LTE; }
 ">"                     {  return GT; }
-">="                    {  return GTE; }
+">="                    {  return GTE ; }
 "=="                    { return EQUAL; }
 "!="                    {  return NOT_EQUAL; }
-"   "                   {return tab;}
-":"                     {return colon;}
-"+"                     {return add;}
-"-"                     {return subtract;}
-"*"                     {return multiple;}
-"/"                     {return divide;}
-"="                     {return assign;}
-"\""                    {return quote;}
+"\t"                   {return tab;}
+":"                     {return ':';}
+"+"                     {return '+';}
+"-"                     {return '-';}
+"*"                     {return '*';}
+"/"                     {return '/' ;}
+"="                     {return '=' ;}
+"\""                    {return '\"' ;}
 "("                     {return left_b;}
-")"                     {return right_b;}
-","                     {return comma;}
+")"                     {return right_b ;}
+","                     {return ',';}
 [a-zA-Z0-9_-]+   {yylval.w = strdup(yytext); return IDENTIFIER;}
 \"([^\\\"]|\\.)*\"      {yylval.w = strdup(yytext); return WORD;}
 "\n"                    {return newLine;}

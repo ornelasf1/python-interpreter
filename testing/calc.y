@@ -2,34 +2,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include"node.h"
+#include <vector>
+// #include"node.h"
 
 extern int yylex();
 extern void yyerror(const char *);
+
+  enum NodeType
+{	ADD_NODE,SUB_NODE,MULT_NODE,DIVIDE_NODE,GT_NODE,GTE_NODE,LT_NODE,LTE_NODE,
+	EQUAL_NODE,NOT_EQUAL_NODE,function_NODE,
+	FUNCRETURN_NODE,IF_NODE,CONDITION_NODE,ELSE_NODE,BLOCK_NODE,PRINT_NODE
+};
+
+
+struct Node{   
+  NodeType Type;
+   int      Value;
+   Node*    Left;
+   Node*    Right;
+};
+
+
 
 %}
 %union {
     int num;
 	char *w;
 }
-%token  add subtract multiple divide
-%token exit_command newLine  quote  
-%token function_defined colon tab 
-%token print IF  funcReturn
-%nonassoc NO_ELSE
-%nonassoc ELSE
-%left LT GT EQUAL NOT_EQUAL LTE GTE
+%token exit_command newLine  '\"'  
+%token function_defined   
+%token print IF  funcReturn tab ELSE
+%left LT  GT EQUAL NOT_EQUAL LTE GTE
 
 %token <w> WORD
 %token <w> IDENTIFIER
 %token <num> NUMBER
-%left comma
-%right assign
-%left add subtract
-%left multiple divide
+%left ','
+%right '=' ':'
+%left '+' '-'
+%left '*' '/'
 %left left_b right_b
 
-%type <num> exp exp_list  selection_statement term assignment function line RELATIONAL EQUALITY
+%type <num> exp  selection_statement term assignment function line block printing
 
 
 %start line
@@ -41,77 +55,83 @@ extern void yyerror(const char *);
 
 line: assignment newLine				{;}
 		| newLine						{;}
-		|selection_statement			{;}
-		| function						{;}
-		| line function					{;}
+		| exp newLine					{;}
+		| line exp newLine					{;}
+		| selection_statement newLine		{;}
+		| line selection_statement newLine		{;}
+		| function newLine				{;}
+		| line function	newLine				{;}
 		| line newLine					{;}
 		| exit_command					{return 0;}
-		| exit_command newLine			{return 0;}
 		| line assignment newLine		{;}
 		| line exit_command newLine		{return 0;}
-		| print left_b exp right_b newLine	{;}
-		| tab funcReturn line			{;}						
-		| print left_b  WORD   right_b newLine {;}
-		| print left_b  WORD comma exp   right_b newLine  {;}
-		| line print left_b exp right_b newLine	{;}
-		| line print left_b  WORD   right_b newLine {;}
-		| line print left_b  WORD comma exp   right_b newLine {;}
+		| printing newLine					{;}
+		| block newLine					{;}
+		| line block newLine			{;}
 
         ;
-selection_statement: IF left_b exp right_b line %prec NO_ELSE {;}
-  | IF left_b exp right_b line ELSE line						{;}
+printing:print left_b exp right_b 	{printf("print left_b exp right_b\n");}					
+		| print left_b  WORD   right_b  {printf("print left_b  WORD   right_b \n");}
+		| print left_b  WORD ',' exp   right_b   {printf("print left_b  WORD ',' exp   right_b  \n");}
+		| line print left_b exp right_b 	{printf(" line print left_b exp right_b\n");}
+		| line print left_b  WORD   right_b  {printf("line print left_b  WORD   right_b  \n");}
+		| line print left_b  WORD ',' exp   right_b  {printf("line print left_b  WORD ',' exp   right_b \n");}
+;
+selection_statement: IF left_b exp right_b ':'	{printf("IF left_b exp right_b  \n ");}
+		| ELSE ':' 	{printf(" ELSE ':' \n ");}
+;
+
+assignment: IDENTIFIER '=' exp  {printf("IDENTIFIER '=' exp \n ");}
+;
+
+exp: term                  		{printf("term\n ");}
+ 		| exp LT exp 	{printf(" exp '>' exp\n");}
+		| exp GT exp 	{printf("exp '<' exp \n ");}
+		| exp GTE exp 	{printf("exp >= exp \n");}
+		| exp LTE exp 	{printf("exp <= exp\n ");}
+  		| exp EQUAL exp {printf("exp == exp \n");}
+		| exp NOT_EQUAL exp {printf("exp != exp\n ");}
+		| exp '+' exp          			 {printf("exp '+' exp \n");}
+       	| exp '-' exp     			 {printf("exp '-' exp \n");}
+		| exp '*' exp    			 {printf("exp '*' exp \n ");}
+		| exp '/' exp       			 {printf(" exp '/' exp \n");}
+		| IDENTIFIER left_b right_b            {printf("IDENTIFIER left_b right_b\n ") ; }
 ;
 
 
 
-assignment: IDENTIFIER assign exp  {;}
+term: NUMBER                {printf("NUMBER\n ");}
+		| IDENTIFIER        {printf(" IDENTIFIER\n");}
 ;
 
-exp: term                  		{;}
- 		| RELATIONAL     			 {; }
-  		| EQUALITY       		 { ; }
-		| exp add exp          			 {;}
-       	| exp subtract exp     			 {;}
-		| exp multiple exp    			 {;}
-		| exp divide exp       			 {;}
-		| IDENTIFIER left_b right_b            { ; }
-		| IDENTIFIER left_b  exp_list right_b  {; }
-       	;
-RELATIONAL: exp GT exp 	{;}
-	| exp LT exp 	{;}
-	|  exp GTE exp 	{;}
-	| exp LTE exp 	{;}
-;
-EQUALITY: exp EQUAL exp {;}
-	|	exp NOT_EQUAL exp {;}
-
-exp_list: exp			{;}
-  | exp comma exp_list { ; }
+function: function_defined IDENTIFIER left_b right_b ':'           { printf("function_defined IDENTIFIER\n"); }
 ;
 
-
-term: NUMBER                {;}
-		| IDENTIFIER        {;}
+block:tab exp {printf("tab exp \n");}
+	| tab funcReturn exp 			{printf("tab funcReturn exp newLine \n");}	
+	| tab printing 				{printf("tab printing newLine \n");}
+	| tab assignment 			{printf("tab assignment \n");}
+	| block tab exp {printf("tab exp \n");}
+	| block tab funcReturn exp 			{printf("tab funcReturn exp newLine \n");}	
+	| block tab printing 				{printf("tab printing newLine \n");}
+	| block tab assignment 			{printf("tab assignment \n");}
 ;
-
-function: function_defined IDENTIFIER left_b right_b            { ; }
-		| tab line					{;}
 
 
 %%                     /* C++ code */
 
 
 
-Node* CreateNode(NodeType type,int val, Node* left, Node* right)
-   {
-      Node* node = new Node;
-      node->Type = type;
-	  node->Value = val;
-      node->Left = left;
-      node->Right = right;
+// Node* CreateNode(NodeType type,int val, Node* left, Node* right)
+//    {
+//       Node* node = new Node;
+//       node->Type = type;
+// 	  node->Value = val;
+//       node->Left = left;
+//       node->Right = right;
 
-      return node;
-   }
+//       return node;
+//    }
 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
