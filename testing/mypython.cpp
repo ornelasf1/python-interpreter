@@ -12,8 +12,10 @@ extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
 
-vector<Variable> variables;
-Variable* getVariable(string var);
+Scope* program = new Scope();
+
+// vector<Variable> variables;
+// Variable* getVariable(string var);
 
 int main(int argc, char** argv) {
     // extern int yydebug;
@@ -53,19 +55,28 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
+Scope::Scope(){}
+
+Scope::Scope(string id, vector<Variable> vars){
+    identifier = id;
+    variables = vars;
+}
+
+Function::Function(){
+}
+Function::Function(vector<Variable> v){
+    variables = v;
+}
+Function::Function(string s, int i, vector<Variable> v){
+    identifier = s;
+    index = i;
+    variables = v;
+}
+
+
 Variable::Variable(string name, int val, string type){
     identifier = name;
     int_value = val;
-    TYPE = type;
-}
-Variable::Variable(string name, string val, string type){
-    identifier = name;
-    str_value = val;
-    TYPE = type;
-}
-Variable::Variable(string name, float val, string type){
-    identifier = name;
-    flo_value = val;
     TYPE = type;
 }
 
@@ -79,20 +90,10 @@ void Variable::setIntValue(int val){
 int Variable::getIntValue(){
     return int_value;
 }
-string Variable::getStrValue(){
-    return str_value;
-}
-float Variable::getFloValue(){
-    return flo_value;
-}
 
 void Variable::printVariableValue(Variable* var){
-	if(var->TYPE == "STRING")
-		printf("Printing: %s\n", var->getStrValue().c_str());
 	if(var->TYPE == "INT")
 		printf("Printing: %d\n", var->getIntValue());
-	if(var->TYPE == "FLOAT")
-		printf("Printing: %f\n", var->getFloValue());
 }
 
 Variable* getVariable(string var){

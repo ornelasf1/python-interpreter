@@ -15,37 +15,42 @@ public:
     std::string getIdentifier();
     int getIntValue();
     void setIntValue(int);
-    std::string getStrValue();
-    float getFloValue();
     static void printVariableValue(Variable* var);
 private:
     std::string identifier;
     int int_value;
-    std::string str_value;
-    float flo_value;
 };
 
 class Function{
 public:
-    void setReturnValue();
-private:
+    Function();
+    Function(std::vector<Variable>);
+    Function(std::string, int, std::vector<Variable>);
     std::string identifier;
-    int int_value;
+    int index;
+    int returnValue;
+    std::vector<Node> statements;
+    std::vector<Varaible> variables;
+    void setReturnValue(int);
 };
 
 class Scope{
 public:
     Scope();
-    Scope(std::vector<Variable> vars);
-    Scope* innerScope;
-private:
-    std::vector<Variable> scopeVariables;
+    Scope(std::string, std::vector<Variable>);
+    std::string identifier;
+    std::vector<Variable> variables;
+    std::vector<Function> functions;
+
+    Variable* getVariable(std::string var);
 };
 
-//Variable that is defined elsewhere (mypython.cpp)
-extern std::vector<Variable> variables;
+extern Scope* program;
 
-extern Variable* getVariable(std::string var);
+//Variable that is defined elsewhere (mypython.cpp)
+//extern std::vector<Variable> variables;
+
+//extern Variable* getVariable(std::string var);
 
 
 #endif
