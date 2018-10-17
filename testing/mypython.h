@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include   "node.h"
 
 
 class Variable{
@@ -30,7 +31,7 @@ public:
     int index;
     int returnValue;
     std::vector<Node> statements;
-    std::vector<Varaible> variables;
+    std::vector<Variable> variables;
     void setReturnValue(int);
 };
 
@@ -47,10 +48,10 @@ public:
 
 extern Scope* program;
 
-//Variable that is defined elsewhere (mypython.cpp)
-//extern std::vector<Variable> variables;
+// Variable that is defined elsewhere (mypython.cpp)
+// extern std::vector<Variable> variables;
 
-//extern Variable* getVariable(std::string var);
+// extern Variable* getVariable(std::string var);
 
 
 #endif

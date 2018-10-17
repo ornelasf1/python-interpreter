@@ -24,7 +24,7 @@
 ">="                    {  return GTE ; }
 "=="                    { return EQUAL; }
 "!="                    {  return NOT_EQUAL; }
-"\t"                {printf("found a tab");return tab;}
+"\s\s\s\s"                   {return tab; }
 ":"                     {return ':';}
 "+"                     {return '+';}
 "-"                     {return '-';}
@@ -38,5 +38,6 @@
 [a-zA-Z0-9_-]+   {yylval.w = strdup(yytext); return IDENTIFIER;}
 \"([^\\\"]|\\.)*\"      {yylval.w = strdup(yytext); return WORD;}
 "\n"                    {return newLine;}
+[ ]                 ;
 .                   ;
 %%

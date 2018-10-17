@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
 		yyparse();
 	} while(!feof(yyin));
 
-    for(int i = 0; i < variables.size(); i++){
-        printf("%d Variable: %s and its value is %d \n", i, variables[i].getIdentifier().c_str(),variables[i].getIntValue());
+    for(int i = 0; i < program->variables.size(); i++){
+        printf("%d Variable: %s and its value is %d \n", i, program->variables[i].getIdentifier().c_str(),program->variables[i].getIntValue());
     }
 
 	return 0;
@@ -96,9 +96,9 @@ void Variable::printVariableValue(Variable* var){
 		printf("Printing: %d\n", var->getIntValue());
 }
 
-Variable* getVariable(string var){
-	for(int i = 0; i < variables.size(); i++)
-		if(var == variables[i].getIdentifier())
-			return &(variables[i]);
+Variable* Scope::getVariable(string var){
+	for(int i = 0; i < program->variables.size(); i++)
+		if(var == program->variables[i].getIdentifier())
+			return &(program->variables[i]);
 	return NULL;
 }

@@ -1,9 +1,10 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <vector>
 #include "mypython.h"
+
 
 using std::vector;
 
@@ -12,8 +13,9 @@ extern void yyerror(const char *);
 
 
 
-
+// #define YYDEBUG 1
 %}
+
 %union {
     int num;
 	char *w;
@@ -32,7 +34,7 @@ extern void yyerror(const char *);
 %left '*' '/'
 %left left_b right_b
 
-%type <num> exp  selection_statement term assignment function line  printing 
+%type <num> exp statement selection_statement term assignment function line  printing 
 
 
 %start line
@@ -42,58 +44,52 @@ extern void yyerror(const char *);
 
 
 
-line:tab newLine                   {printf(" tabsss\n");}
-		| tab exp newLine {printf("tab exp \n");}
-		| tab funcReturn exp newLine			{printf("tab funcReturn exp newLine \n");}	
-		| tab printing newLine			{printf("tab printing newLine \n");}
-		| tab assignment newLine			{printf("tab assignment \n");}
-		| tab selection_statement newLine			{printf("tab selection_statement \n");}
-		| line tab newLine                   {printf(" tabsss\n");}
-		| line tab exp newLine {printf("tab exp \n");}
-		| line tab funcReturn exp newLine			{printf("tab funcReturn exp newLine \n");}	
-		| line tab printing newLine			{printf("tab printing newLine \n");}
-		| line tab assignment newLine			{printf("tab assignment \n");}
-		| line tab selection_statement newLine			{printf("tab selection_statement \n");}
-		| assignment newLine				{;}
-		| newLine						{;}
-		| exp newLine					{ printf("%d\n",$1); }
-		| line exp newLine					{$$;}
-		| selection_statement newLine		{;}
-		| line selection_statement newLine		{;}
-		| function newLine				{;}
-		| line function	newLine				{;}
-		| line newLine					{;}
-		| exit_command					{return 0;}
-		| line assignment newLine		{;}
-		| line exit_command newLine		{return 0;}
-		| printing newLine					{;}
+line: tab statement newLine					{;}
+		| line tab statement newLine			{;}
+		| statement newLine							{;}
+		| line statement newLine				{;}
+		| newLine								{;}
+		| line newLine							{;}
+		| exit_command							{return 0;}
+		| line exit_command newLine				{return 0;}
+		
 		
 ;
-
-printing:print left_b exp right_b 	{printf("%d\n",$3);}					
-		| print left_b  WORD   right_b  {printf($3);}
-		| print left_b  WORD ',' exp   right_b   {printf($3);printf("%d\n",$5);}
-		| line print left_b exp right_b 	{printf("%d\n",$4);}
-		| line print left_b  WORD   right_b  {printf($4);}
-		| line print left_b  WORD ',' exp   right_b  {printf($4);printf("%d\n",$6);}
+statement:assignment 							{;}
+	| exp 							{ ; }
+	| selection_statement 			{;}
+	| function 						{;}
+	| printing 						{;}
 ;
-selection_statement: IF left_b exp right_b ':'	{if($3){printf("this works");}}
+printing:print left_b exp right_b 	{printf("%d\n",$3);}					
+		| print left_b  WORD   right_b  {
+											std::string str($3);
+											str.erase(0, 1);
+											str.erase(str.size() - 1);
+											printf(str.c_str());
+											}
+		| print left_b  WORD ',' exp   right_b   {std::string str($3);
+											str.erase(0, 1);
+											str.erase(str.size() - 1);
+											printf(str.c_str());;printf("%d\n",$5);}
+;
+selection_statement: IF left_b exp right_b ':' exp 	{if($3){printf("its true");}else{printf("its false");}}
 		| ELSE ':' 	{printf(" ELSE ':' \n ");}
 ;
 
-assignment: IDENTIFIER '=' exp  {if(variables.size() >= 1){
-		for(int i = 0; i < variables.size(); i++){
-			if($1 == variables[i].getIdentifier()){
-				variables[i].setIntValue($3);
+assignment: IDENTIFIER '=' exp  {if(program->variables.size() >= 1){
+		for(int i = 0; i < program->variables.size(); i++){
+			if($1 == program->variables[i].getIdentifier()){
+				program->variables[i].setIntValue($3);
 				break;
-			}else if($1 != variables[i].getIdentifier() && i == variables.size() - 1){
+			}else if($1 != program->variables[i].getIdentifier() && i == program->variables.size() - 1){
 				Variable* var = new Variable($1, $3, "INT");
-				variables.push_back(*var);
+				program->variables.push_back(*var);
 			}
 		}
 	}else{
 		Variable* var = new Variable($1, $3, "INT");
-		variables.push_back(*var);
+		program->variables.push_back(*var);
 	}}
 ;
 
@@ -105,17 +101,17 @@ exp: term                  		{$$=$1;}
   		| exp EQUAL exp 	{if($1==$3){$$=true;}else{$$=false;}}
 		| exp NOT_EQUAL exp {if($1!=$3){$$=true;}else{$$=false;}}
 		| exp '+' exp          			 {$$=$1+$3;}
-       	| exp '-' exp     			 {$$=$1+$3;}
-		| exp '*' exp    			 {$$=$1+$3;}
-		| exp '/' exp       			 {$$=$1+$3;}
-		| IDENTIFIER left_b right_b            {printf("IDENTIFIER ()\n ") ; }
+       	| exp '-' exp     			 {$$=$1-$3;}
+		| exp '*' exp    			 {$$=$1*$3;}
+		| exp '/' exp       			 {$$=$1/$3;}
+		| IDENTIFIER left_b right_b            { ; }
 ;
 
 
 
 term: NUMBER                {$$=$1;}
 		| IDENTIFIER        {std::string str($1);
-			Variable* value = getVariable(str);
+			Variable* value = program->getVariable(str);
 			if(value)
 				$$ = value->getIntValue();
 			else
@@ -123,7 +119,8 @@ term: NUMBER                {$$=$1;}
 		}
 ;
 
-function: function_defined IDENTIFIER left_b right_b ':'           { printf("function_defined IDENTIFIER\n"); }
+function: function_defined IDENTIFIER left_b right_b ':'           { ; }
+		| funcReturn exp					{$$=$2;}
 ;
 
 %%                     /* C++ code */
