@@ -3,24 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
-// #include"node.h"
+#include"node.h"
 
 extern int yylex();
 extern void yyerror(const char *);
 
-  enum NodeType
-{	ADD_NODE,SUB_NODE,MULT_NODE,DIVIDE_NODE,GT_NODE,GTE_NODE,LT_NODE,LTE_NODE,
-	EQUAL_NODE,NOT_EQUAL_NODE,function_NODE,
-	FUNCRETURN_NODE,IF_NODE,CONDITION_NODE,ELSE_NODE,BLOCK_NODE,PRINT_NODE
-};
-
-
-struct Node{   
-  NodeType Type;
-   int      Value;
-   Node*    Left;
-   Node*    Right;
-};
 
 
 
