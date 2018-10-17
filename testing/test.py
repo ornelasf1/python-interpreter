@@ -1,8 +1,7 @@
-
-a=9
-b=5
-if(a>b):
+def f():
+    a=9
     print(a)
-else:
-    print(b)
-
+    a=5
+    print(a)
+    
+f()

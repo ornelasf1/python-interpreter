@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
-#include"node.h"
+#include "mypython.h"
+
+using std::vector;
 
 extern int yylex();
 extern void yyerror(const char *);
@@ -30,7 +32,7 @@ extern void yyerror(const char *);
 %left '*' '/'
 %left left_b right_b
 
-%type <num> exp  selection_statement term assignment function line block printing
+%type <num> exp  selection_statement term assignment function line  printing 
 
 
 %start line
@@ -40,10 +42,22 @@ extern void yyerror(const char *);
 
 
 
-line: assignment newLine				{;}
+line:tab newLine                   {printf(" tabsss\n");}
+		| tab exp newLine {printf("tab exp \n");}
+		| tab funcReturn exp newLine			{printf("tab funcReturn exp newLine \n");}	
+		| tab printing newLine			{printf("tab printing newLine \n");}
+		| tab assignment newLine			{printf("tab assignment \n");}
+		| tab selection_statement newLine			{printf("tab selection_statement \n");}
+		| line tab newLine                   {printf(" tabsss\n");}
+		| line tab exp newLine {printf("tab exp \n");}
+		| line tab funcReturn exp newLine			{printf("tab funcReturn exp newLine \n");}	
+		| line tab printing newLine			{printf("tab printing newLine \n");}
+		| line tab assignment newLine			{printf("tab assignment \n");}
+		| line tab selection_statement newLine			{printf("tab selection_statement \n");}
+		| assignment newLine				{;}
 		| newLine						{;}
-		| exp newLine					{;}
-		| line exp newLine					{;}
+		| exp newLine					{ printf("%d\n",$1); }
+		| line exp newLine					{$$;}
 		| selection_statement newLine		{;}
 		| line selection_statement newLine		{;}
 		| function newLine				{;}
@@ -53,73 +67,72 @@ line: assignment newLine				{;}
 		| line assignment newLine		{;}
 		| line exit_command newLine		{return 0;}
 		| printing newLine					{;}
-		| block newLine					{;}
-		| line block newLine			{;}
-
-        ;
-printing:print left_b exp right_b 	{printf("print left_b exp right_b\n");}					
-		| print left_b  WORD   right_b  {printf("print left_b  WORD   right_b \n");}
-		| print left_b  WORD ',' exp   right_b   {printf("print left_b  WORD ',' exp   right_b  \n");}
-		| line print left_b exp right_b 	{printf(" line print left_b exp right_b\n");}
-		| line print left_b  WORD   right_b  {printf("line print left_b  WORD   right_b  \n");}
-		| line print left_b  WORD ',' exp   right_b  {printf("line print left_b  WORD ',' exp   right_b \n");}
+		
 ;
-selection_statement: IF left_b exp right_b ':'	{printf("IF left_b exp right_b  \n ");}
+
+printing:print left_b exp right_b 	{printf("%d\n",$3);}					
+		| print left_b  WORD   right_b  {printf($3);}
+		| print left_b  WORD ',' exp   right_b   {printf($3);printf("%d\n",$5);}
+		| line print left_b exp right_b 	{printf("%d\n",$4);}
+		| line print left_b  WORD   right_b  {printf($4);}
+		| line print left_b  WORD ',' exp   right_b  {printf($4);printf("%d\n",$6);}
+;
+selection_statement: IF left_b exp right_b ':'	{if($3){printf("this works");}}
 		| ELSE ':' 	{printf(" ELSE ':' \n ");}
 ;
 
-assignment: IDENTIFIER '=' exp  {printf("IDENTIFIER '=' exp \n ");}
+assignment: IDENTIFIER '=' exp  {if(variables.size() >= 1){
+		for(int i = 0; i < variables.size(); i++){
+			if($1 == variables[i].getIdentifier()){
+				variables[i].setIntValue($3);
+				break;
+			}else if($1 != variables[i].getIdentifier() && i == variables.size() - 1){
+				Variable* var = new Variable($1, $3, "INT");
+				variables.push_back(*var);
+			}
+		}
+	}else{
+		Variable* var = new Variable($1, $3, "INT");
+		variables.push_back(*var);
+	}}
 ;
 
-exp: term                  		{printf("term\n ");}
- 		| exp LT exp 	{printf(" exp '>' exp\n");}
-		| exp GT exp 	{printf("exp '<' exp \n ");}
-		| exp GTE exp 	{printf("exp >= exp \n");}
-		| exp LTE exp 	{printf("exp <= exp\n ");}
-  		| exp EQUAL exp {printf("exp == exp \n");}
-		| exp NOT_EQUAL exp {printf("exp != exp\n ");}
-		| exp '+' exp          			 {printf("exp '+' exp \n");}
-       	| exp '-' exp     			 {printf("exp '-' exp \n");}
-		| exp '*' exp    			 {printf("exp '*' exp \n ");}
-		| exp '/' exp       			 {printf(" exp '/' exp \n");}
-		| IDENTIFIER left_b right_b            {printf("IDENTIFIER left_b right_b\n ") ; }
+exp: term                  		{$$=$1;}
+ 		| exp LT exp 		{if($1<$3){$$=true;}else{$$=false;}}
+		| exp GT exp 		{if($1>$3){$$=true;}else{$$=false;}}
+		| exp GTE exp 		{if($1>=$3){$$=true;}else{$$=false;}}
+		| exp LTE exp 		{if($1<=$3){$$=true;}else{$$=false;}}
+  		| exp EQUAL exp 	{if($1==$3){$$=true;}else{$$=false;}}
+		| exp NOT_EQUAL exp {if($1!=$3){$$=true;}else{$$=false;}}
+		| exp '+' exp          			 {$$=$1+$3;}
+       	| exp '-' exp     			 {$$=$1+$3;}
+		| exp '*' exp    			 {$$=$1+$3;}
+		| exp '/' exp       			 {$$=$1+$3;}
+		| IDENTIFIER left_b right_b            {printf("IDENTIFIER ()\n ") ; }
 ;
 
 
 
-term: NUMBER                {printf("NUMBER\n ");}
-		| IDENTIFIER        {printf(" IDENTIFIER\n");}
+term: NUMBER                {$$=$1;}
+		| IDENTIFIER        {std::string str($1);
+			Variable* value = getVariable(str);
+			if(value)
+				$$ = value->getIntValue();
+			else
+				yyerror("unknown variable");
+		}
 ;
 
 function: function_defined IDENTIFIER left_b right_b ':'           { printf("function_defined IDENTIFIER\n"); }
 ;
 
-block:tab exp {printf("tab exp \n");}
-	| tab funcReturn exp 			{printf("tab funcReturn exp newLine \n");}	
-	| tab printing 				{printf("tab printing newLine \n");}
-	| tab assignment 			{printf("tab assignment \n");}
-	| block tab exp {printf("tab exp \n");}
-	| block tab funcReturn exp 			{printf("tab funcReturn exp newLine \n");}	
-	| block tab printing 				{printf("tab printing newLine \n");}
-	| block tab assignment 			{printf("tab assignment \n");}
-;
-
-
 %%                     /* C++ code */
 
 
+	
+		
 
-// Node* CreateNode(NodeType type,int val, Node* left, Node* right)
-//    {
-//       Node* node = new Node;
-//       node->Type = type;
-// 	  node->Value = val;
-//       node->Left = left;
-//       node->Right = right;
-
-//       return node;
-//    }
-
+	 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
 	exit(1);
