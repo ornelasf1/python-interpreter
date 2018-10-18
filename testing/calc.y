@@ -63,18 +63,24 @@ statement:assignment 							{;}
 	| printing 						{;}
 ;
 printing:print left_b exp right_b 	{ 
-	Node* node = new PrintNode($3); 
-	program->functions.back().statements.push_back(node);
+	if(program->functions.size()>1){Node* node = new PrintNode($3); 
+	program->functions.back().statements.push_back(node);}
+	else{
+		printf("%d",$3);
+
+	}
 	//printf("Insert print node with %d into function %s\n", $3, program->functions.back().identifier.c_str());
 	}					
 		| print left_b  WORD   right_b  {
 											std::string str($3);
 											str.erase(0, 1);
 											str.erase(str.size() - 1);
-											//printf("%s",str.c_str());
-
+											if(program->functions.size()>1){
 											Node* node = new PrintNode(str); 
 											program->functions.back().statements.push_back(node);
+											}else{
+											printf("%s",str.c_str());													
+											}
 											}
 		| print left_b  WORD ',' exp   right_b   {
 											std::string str($3);
@@ -85,7 +91,7 @@ printing:print left_b exp right_b 	{
 											// program->functions.back().statements.push_back(node);
 											}
 ;
-selection_statement: IF left_b exp right_b ':' exp 	{if($3){printf("its true");}else{printf("its false");}}
+selection_statement: IF left_b exp right_b ':'  	{if($3){printf("its true");}else{printf("its false");}}
 		| ELSE ':' 	{printf(" ELSE ':' \n ");}
 ;
 

@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
 		yyparse();
 	} while(!feof(yyin));
 
-    for(int i = 0; i < program->variables.size(); i++){
-        printf("%d Variable: %s and its value is %d \n", i, program->variables[i].getIdentifier().c_str(),program->variables[i].getIntValue());
-    }
+    // for(int i = 0; i < program->variables.size(); i++){
+    //     printf("%d Variable: %s and its value is %d \n", i, program->variables[i].getIdentifier().c_str(),program->variables[i].getIntValue());
+    // }
 
 	return 0;
 }
